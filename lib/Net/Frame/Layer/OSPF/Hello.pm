@@ -1,5 +1,5 @@
 #
-# $Id: Hello.pm,v 1.3 2007/02/04 16:44:59 gomor Exp $
+# $Id: Hello.pm,v 1.4 2007/03/13 18:17:50 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::Hello;
 use strict;
@@ -140,9 +140,14 @@ Net::Frame::Layer::OSPF::Hello - OSPF Hello type object
    use Net::Frame::Layer::OSPF::Hello;
 
    my $layer = Net::Frame::Layer::OSPF::Hello->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
+      networkMask            => '255.255.255.0',
+      helloInterval          => 60,
+      options                => 0,
+      routerPri              => 0,
+      routerDeadInterval     => 120,
+      designatedRouter       => '0.0.0.0',
+      backupDesignatedRouter => '0.0.0.0',
+      neighborList           => [],
    );
    $layer->pack;
 
@@ -165,13 +170,27 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<networkMask>
 
-Identification number.
+=item B<helloInterval>
 
-=item B<sequenceNumber>
+=item B<options>
 
-Sequence number.
+=item B<routerPri>
+
+=item B<routerDeadInterval>
+
+=item B<designatedRouter>
+
+=item B<backupDesignatedRouter>
+
+=item B<lls>
+
+Previous attributes set and get scalar values.
+
+=item B<neighborList> ( [ B<IP address>, ... ] )
+
+This attribute takes an array ref of IP addresses.
 
 =back
 
@@ -239,7 +258,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

@@ -1,5 +1,5 @@
 #
-# $Id: Lls.pm,v 1.1 2007/02/04 14:16:30 gomor Exp $
+# $Id: Lls.pm,v 1.2 2007/03/13 18:19:39 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::Lls;
 use strict;
@@ -11,6 +11,7 @@ our @ISA = qw(Net::Frame::Layer);
 our @AS = qw(
    checksum
    dataLength
+   rawTlv
 );
 our @AA = qw(
    tlvList
@@ -30,16 +31,29 @@ sub new {
    );
 }
 
+sub getLength {
+   #my $self = shift;
+   #my $len = 4;
+   #if ($self->rawTlv) {
+      #$len += length($self->rawTlv);
+   #}
+   #print "TLV LEN: $len\n";
+   #$len;
+   0;
+}
+
 sub pack {
    my $self = shift;
 
-#  $self->raw($self->SUPER::pack('nCCNNNnn a*',
-#     $self->lsAge, $self->options, $self->lsType, $self->linkStateId,
-#     inetAton($self->advertisingRouter), $self->lsSequenceNumber,
-#     $self->lsChecksum, $self->length,
-#  )) or return undef;
+   my $raw = $self->SUPER::pack('nn', $self->checksum, $self->dataLength)
+      or return undef;
 
-   $self->raw;
+   if ($self->rawTlv) {
+      $raw .= $self->SUPER::pack('a*', $self->rawTlv)
+         or return undef;
+   }
+
+   $self->raw($raw);
 }
 
 sub unpack {
@@ -53,8 +67,9 @@ sub unpack {
    $self->dataLength($dataLength);
 
    # XXX: handle TLV
+   $self->rawTlv($payload);
 
-   $self->payload($payload);
+   #$self->payload($payload);
 
    $self;
 }
@@ -64,9 +79,11 @@ sub print {
 
    my $l = $self->layer;
    sprintf
-      "$l: checksum:0x%04x  dataLength:%d",
+      "$l: checksum:0x%04x  dataLength:%d\n".
+      "$l: rawTlv:%s",
          $self->checksum,
          $self->dataLength,
+         CORE::unpack('H*', $self->rawTlv),
    ;
 }
 
@@ -182,7 +199,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

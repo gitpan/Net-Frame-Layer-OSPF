@@ -1,5 +1,5 @@
 #
-# $Id: DatabaseDesc.pm,v 1.3 2007/02/25 20:40:14 gomor Exp $
+# $Id: DatabaseDesc.pm,v 1.4 2007/03/13 18:14:43 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::DatabaseDesc;
 use strict;
@@ -13,6 +13,7 @@ our @AS = qw(
    options
    flags
    ddSequenceNumber
+   lls
 );
 our @AA = qw(
    lsaList
@@ -41,6 +42,9 @@ sub getLength {
    for ($self->lsaList) {
       $len += $_->getLength;
    }
+   if ($self->lls) {
+      $len += $self->lls->getLength;
+   }
    $len;
 }
 
@@ -54,6 +58,10 @@ sub pack {
 
    for ($self->lsaList) {
       $raw .= $_->pack or return undef;
+   }
+
+   if ($self->lls) {
+      $raw .= $self->lls->pack or return undef;
    }
 
    $self->raw($raw);
@@ -109,6 +117,10 @@ sub print {
       $buf .= "\n".$_->print;
    }
 
+   if ($self->lls) {
+      $buf .= "\n".$self->lls->print;
+   }
+
    $buf;
 }
 
@@ -125,9 +137,11 @@ Net::Frame::Layer::OSPF::DatabaseDesc - OSPF DatabaseDesc type object
    use Net::Frame::Layer::OSPF::DatabaseDesc;
 
    my $layer = Net::Frame::Layer::OSPF::DatabaseDesc->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
+      interfaceMtu     => 1500,
+      options          => 0,
+      flags            => 0,
+      ddSequenceNumber => 1,
+      lsaList          => [],
    );
    $layer->pack;
 
@@ -150,13 +164,21 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<interfaceMtu>
 
-Identification number.
+=item B<options>
 
-=item B<sequenceNumber>
+=item B<flags>
 
-Sequence number.
+=item B<ddSequenceNumber>
+
+=item B<lls>
+
+Previous attributes set and get scalar values.
+
+=item B<lsaList> ( [ B<Net::Frame::Layer::Lsa>, ... ] )
+
+This attribute takes an array ref of B<Net::Frame::Layer::Lsa> objects.
 
 =back
 
@@ -224,7 +246,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

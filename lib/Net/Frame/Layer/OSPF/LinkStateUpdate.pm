@@ -1,5 +1,5 @@
 #
-# $Id: LinkStateUpdate.pm,v 1.3 2007/02/28 21:03:11 gomor Exp $
+# $Id: LinkStateUpdate.pm,v 1.4 2007/03/13 18:18:45 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::LinkStateUpdate;
 use strict;
@@ -102,9 +102,8 @@ Net::Frame::Layer::OSPF::LinkStateUpdate - OSPF LinkStateUpdate type object
    use Net::Frame::Layer::OSPF::LinkStateUpdate;
 
    my $layer = Net::Frame::Layer::OSPF::LinkStateUpdate->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
+      lsaNumber => 0,
+      lsaList   => [],
    );
    $layer->pack;
 
@@ -127,13 +126,11 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<lsaNumber>
 
-Identification number.
+=item B<lsaList> ( [ B<Net::Frame::Layer::Lsa>, ... ] )
 
-=item B<sequenceNumber>
-
-Sequence number.
+This attribute takes an array ref of B<Net::Frame::Layer::Lsa> objects.
 
 =back
 
@@ -201,7 +198,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

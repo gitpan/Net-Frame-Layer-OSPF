@@ -1,5 +1,5 @@
 #
-# $Id: Router.pm,v 1.4 2007/03/08 16:32:32 gomor Exp $
+# $Id: Router.pm,v 1.5 2007/03/13 18:20:37 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::Lsa::Router;
 use strict;
@@ -103,17 +103,17 @@ __END__
 
 =head1 NAME
 
-Net::Frame::Layer::OSPF::Lsa::Router - OSPF Lsa::Router type object
+Net::Frame::Layer::OSPF::Lsa::Router - OSPF Lsa Router type object
 
 =head1 SYNOPSIS
 
    use Net::Frame::Layer::OSPF::Lsa::Router;
 
    my $layer = Net::Frame::Layer::OSPF::Lsa::Router->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
-   );
+      flags    => 0,
+      zero     => 0,
+      nLink    => 0,
+      linkList => [],
    $layer->pack;
 
    print 'RAW: '.$layer->dump."\n";
@@ -135,13 +135,17 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<flags>
 
-Identification number.
+=item B<zero>
 
-=item B<sequenceNumber>
+=item B<nLink>
 
-Sequence number.
+Previous attributes set and get scalar values.
+
+=item B<linkList> ( [ B<Net::Frame::Layer::Lsa::Router::Link>, ... ] )
+
+This attribute takes an array ref of B<Net::Frame::Layer::Lsa::Router::Link> objects.
 
 =back
 
@@ -209,7 +213,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

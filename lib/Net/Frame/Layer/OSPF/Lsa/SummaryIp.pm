@@ -1,5 +1,5 @@
 #
-# $Id: SummaryIp.pm,v 1.1 2007/02/04 14:16:30 gomor Exp $
+# $Id: SummaryIp.pm,v 1.2 2007/03/13 18:21:08 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::Lsa::SummaryIp;
 use strict;
@@ -28,10 +28,9 @@ sub new {
 sub pack {
    my $self = shift;
 
-#  $self->raw($self->SUPER::pack('CCnNNCCn',
-#     $self->flags, $self->zero, $self->nLink, $self->linkId, $self->linkData,
-#     $self->type, $self->nTos, $self->metric,
-#  )) or return undef;
+   $self->raw($self->SUPER::pack('a4N',
+      inetAton($self->networkMask), $self->metric,
+   )) or return undef;
 
    $self->raw;
 }
@@ -68,16 +67,15 @@ __END__
 
 =head1 NAME
 
-Net::Frame::Layer::OSPF::Lsa::SummaryIp - OSPF Lsa::SummaryIp type object
+Net::Frame::Layer::OSPF::Lsa::SummaryIp - OSPF Lsa  SummaryIp type object
 
 =head1 SYNOPSIS
 
    use Net::Frame::Layer::OSPF::Lsa::SummaryIp;
 
    my $layer = Net::Frame::Layer::OSPF::Lsa::SummaryIp->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
+      networkMask => '255.255.255.0',
+      metric      => 10,
    );
    $layer->pack;
 
@@ -100,13 +98,9 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<networkMask>
 
-Identification number.
-
-=item B<sequenceNumber>
-
-Sequence number.
+=item B<metric>
 
 =back
 
@@ -174,7 +168,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

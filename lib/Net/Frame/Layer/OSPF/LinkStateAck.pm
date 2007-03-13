@@ -1,5 +1,5 @@
 #
-# $Id: LinkStateAck.pm,v 1.2 2007/02/27 23:58:56 gomor Exp $
+# $Id: LinkStateAck.pm,v 1.3 2007/03/13 18:18:09 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::LinkStateAck;
 use strict;
@@ -81,9 +81,7 @@ Net::Frame::Layer::OSPF::LinkStateAck - OSPF LinkStateAck type object
    use Net::Frame::Layer::OSPF::LinkStateAck;
 
    my $layer = Net::Frame::Layer::OSPF::LinkStateAck->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
+      lsaList => [],
    );
    $layer->pack;
 
@@ -106,13 +104,9 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<lsaList> ( [ B<Net::Frame::Layer::Lsa>, ... ] )
 
-Identification number.
-
-=item B<sequenceNumber>
-
-Sequence number.
+This attribute takes an array ref of B<Net::Frame::Layer::Lsa> objects.
 
 =back
 
@@ -180,7 +174,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

@@ -1,11 +1,11 @@
 #
-# $Id: OSPF.pm,v 1.11 2007/03/09 08:41:11 gomor Exp $
+# $Id: OSPF.pm,v 1.13 2007/03/13 18:22:57 gomor Exp $
 #
 package Net::Frame::Layer::OSPF;
 use strict;
 use warnings;
 
-our $VERSION = '1.00_01';
+our $VERSION = '1.00';
 
 use Net::Frame::Layer qw(:consts :subs);
 require Exporter;
@@ -14,7 +14,6 @@ our @ISA = qw(Net::Frame::Layer Exporter);
 our %EXPORT_TAGS = (
    consts => [qw(
       NF_OSPF_HDR_LEN
-      NF_OSPF_AUTH_TYPE_NULL
       NF_OSPF_TYPE_HELLO
       NF_OSPF_TYPE_DATABASEDESC
       NF_OSPF_TYPE_LINKSTATEREQUEST
@@ -56,8 +55,8 @@ our @EXPORT_OK = (
    @{$EXPORT_TAGS{consts}},
 );
 
-use constant NF_OSPF_HDR_LEN        => 24;
-use constant NF_OSPF_AUTH_TYPE_NULL => 0x0000;
+use constant NF_OSPF_HDR_LEN     => 24;
+use constant NF_OSPF_LSA_HDR_LEN => 20;
 
 use constant NF_OSPF_TYPE_HELLO            => 0x01;
 use constant NF_OSPF_TYPE_DATABASEDESC     => 0x02;
@@ -65,11 +64,9 @@ use constant NF_OSPF_TYPE_LINKSTATEREQUEST => 0x03;
 use constant NF_OSPF_TYPE_LINKSTATEUPDATE  => 0x04;
 use constant NF_OSPF_TYPE_LINKSTATEACK     => 0x05;
 
-use constant NF_OSPF_AUTHTYPE_NULL   => 0x00;
-use constant NF_OSPF_AUTHTYPE_SIMPLE => 0x01;
-use constant NF_OSPF_AUTHTYPE_CRYPTO => 0x02;
-
-use constant NF_OSPF_LSA_HDR_LEN => 20;
+use constant NF_OSPF_AUTHTYPE_NULL   => 0x0000;
+use constant NF_OSPF_AUTHTYPE_SIMPLE => 0x0001;
+use constant NF_OSPF_AUTHTYPE_CRYPTO => 0x0002;
 
 use constant NF_OSPF_LSTYPE_ROUTER      => 0x01;
 use constant NF_OSPF_LSTYPE_NETWORK     => 0x02;
@@ -130,7 +127,7 @@ sub new {
       routerId => '127.0.0.1',
       areaId   => '127.0.0.1',
       checksum => 0,
-      authType => NF_OSPF_AUTH_TYPE_NULL,
+      authType => NF_OSPF_AUTHTYPE_NULL,
       authData => "0000000000000000",
       @_,
    );
@@ -186,8 +183,16 @@ sub computeLengths {
 sub computeChecksums {
    my $self = shift;
 
+   # When simple password auth is used, we MUST calculate 
+   # the checksum without the plaintext password
+   my $authData = $self->authData;
+   $self->authData("0000000000000000");
+
    $self->checksum(0);
    $self->checksum(inetChecksum($self->pack));
+
+   # Restore the simple password
+   $self->authData($authData);
 }
 
 sub pack {
@@ -252,17 +257,31 @@ sub unpack {
 
    if ($next) {
       $next->unpack;
-      $next->payload($next->payload.$payload);
+      my $newPayload = $next->payload;
+      if ($payload) { $newPayload .= $payload }
+      $next->payload($newPayload);
       $self->packet($next);
       $payload = $next->payload;
 
-      # Handle special options for OSPF::Hello frame
-      if ($next->layer eq 'OSPF::Hello') {
-         if ($next->options & NF_OSPF_HELLO_OPTIONS_EA) {
-            my $lls = Net::Frame::Layer::OSPF::Lls->new(raw => $payload);
-            $lls->unpack;
-            $next->lls($lls);
-            $payload = $lls->payload;
+      if ($payload) {
+         # Handle special options for OSPF::Hello frame
+         if ($next->layer eq 'OSPF::Hello') {
+            if ($next->options & NF_OSPF_HELLO_OPTIONS_EA) {
+               my $lls = Net::Frame::Layer::OSPF::Lls->new(raw => $payload);
+               $lls->unpack;
+               $next->lls($lls);
+               $payload = $lls->payload;
+            }
+         }
+         # Handle special options for OSPF::DatabaseDesc frame
+         elsif ($next->layer eq 'OSPF::DatabaseDesc') {
+            # XXX: ugly hack, should rework
+            if ($next->options == 0x52) {
+               my $lls = Net::Frame::Layer::OSPF::Lls->new(raw => $payload);
+               $lls->unpack;
+               $next->lls($lls);
+               $payload = $lls->payload;
+            }
          }
       }
    }
@@ -306,8 +325,7 @@ Net::Frame::Layer::OSPF - Open Shortest Path First layer object
 
 =head1 SYNOPSIS
 
-   use Net::Packet::Consts qw(:ospf);
-   require Net::Packet::OSPF;
+   use Net::Frame::Layer::OSPF qw(:consts);
 
    # Build a layer
    my $layer = Net::Frame::Layer::OSPF->new(
@@ -317,7 +335,7 @@ Net::Frame::Layer::OSPF - Open Shortest Path First layer object
       routerId => '127.0.0.1',
       areaId   => '127.0.0.1',
       checksum => 0,
-      authType => NF_OSPF_AUTH_TYPE_NULL,
+      authType => NF_OSPF_AUTHTYPE_NULL,
       authData => "0000000000000000",
    );
    $layer->pack;
@@ -385,6 +403,10 @@ The following are inherited attributes. See B<Net::Frame::Layer> for more inform
 
 Object constructor. You can pass attributes that will overwrite default ones. See B<SYNOPSIS> for default values.
 
+=item B<match> (Net::Frame::Layer::OSPF object)
+
+This method is mostly used internally. You pass a B<Net::Frame::Layer::OSPF> layer as a parameter, and it returns true if this is a response corresponding for the request, or returns false if not.
+
 =back
 
 The following are inherited methods. Some of them may be overriden in this layer, and some others may not be meaningful in this layer. See B<Net::Frame::Layer> for more information.
@@ -421,11 +443,17 @@ Load them: use Net::Frame::Layer::OSPF qw(:consts);
 
 =item B<NF_OSPF_HDR_LEN>
 
-OSPF header length.
+=item B<NF_OSPF_LSA_HDR_LEN>
 
-=item B<NF_OSPF_AUTH_TYPE_NULL>
+Various OSPF layer types header length.
 
-Various supported OSPF authentication types.
+=item B<NF_OSPF_AUTHTYPE_NULL>
+
+=item B<NF_OSPF_AUTHTYPE_SIMPLE>
+
+=item B<NF_OSPF_AUTHTYPE_CRYPTO>
+
+Supported OSPF authentication schemes.
 
 =item B<NF_OSPF_TYPE_HELLO>
 
@@ -437,7 +465,67 @@ Various supported OSPF authentication types.
 
 =item B<NF_OSPF_TYPE_LINKSTATEACK>
 
-Various supported OSPF packet types.
+Supported OSPF message types.
+
+=item B<NF_OSPF_LSTYPE_ROUTER>
+
+=item B<NF_OSPF_LSTYPE_NETWORK>
+
+=item B<NF_OSPF_LSTYPE_SUMMARYIP>
+
+=item B<NF_OSPF_LSTYPE_SUMMARYASBR>
+
+=item B<NF_OSPF_LSTYPE_ASEXTERNAL>
+
+=item B<NF_OSPF_LSTYPE_OPAQUELINKLOCAL>
+
+=item B<NF_OSPF_LSTYPE_OPAQUEAREALOCAL>
+
+=item B<NF_OSPF_LSTYPE_OPAQUEDOMAIN>
+
+Supported OSPF LinkState types.
+
+=item B<NF_OSPF_HELLO_OPTIONS_UNK>
+
+=item B<NF_OSPF_HELLO_OPTIONS_E>
+
+=item B<NF_OSPF_HELLO_OPTIONS_MC>
+
+=item B<NF_OSPF_HELLO_OPTIONS_NP>
+
+=item B<NF_OSPF_HELLO_OPTIONS_EA>
+
+=item B<NF_OSPF_HELLO_OPTIONS_DC>
+
+=item B<NF_OSPF_HELLO_OPTIONS_O>
+
+=item B<NF_OSPF_HELLO_OPTIONS_DN>
+
+OSPF Hello header options flags.
+
+=item B<NF_OSPF_DATABASEDESC_OPTIONS_DN>
+
+=item B<NF_OSPF_DATABASEDESC_OPTIONS_0>
+
+=item B<NF_OSPF_DATABASEDESC_OPTIONS_DC>
+
+=item B<NF_OSPF_DATABASEDESC_OPTIONS_L>
+
+=item B<NF_OSPF_DATABASEDESC_OPTIONS_NP>
+
+=item B<NF_OSPF_DATABASEDESC_OPTIONS_MC>
+
+=item B<NF_OSPF_DATABASEDESC_OPTIONS_E>
+
+OSPF DatabaseDesc header options flags.
+
+=item B<NF_OSPF_DATABASEDESC_FLAGS_MS>
+
+=item B<NF_OSPF_DATABASEDESC_FLAGS_M>
+
+=item B<NF_OSPF_DATABASEDESC_FLAGS_I>
+
+OSPF DatabaseDesc header flags.
 
 =back
 

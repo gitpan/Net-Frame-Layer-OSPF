@@ -23,4 +23,16 @@ README
 t/01-use.t
 t/02-pod-coverage.t
 t/03-test-pod.t
-t/04-layer-create.t
+t/04-layer-ospf.t
+t/05-layer-ospf-databasedesc.t
+t/06-layer-ospf-hello.t
+t/07-layer-ospf-linkstateack.t
+t/08-layer-ospf-linkstaterequest.t
+t/09-layer-ospf-linkstateupdate.t
+t/10-layer-ospf-lls.t
+t/11-layer-ospf-lsa.t
+t/12-layer-ospf-lsa-network.t
+t/13-layer-ospf-lsa-opaque.t
+t/14-layer-ospf-lsa-router.t
+t/15-layer-ospf-lsa-router-link.t
+t/16-layer-ospf-lsa-summaryip.t

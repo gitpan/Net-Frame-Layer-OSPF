@@ -1,5 +1,5 @@
 #
-# $Id: LinkStateRequest.pm,v 1.2 2007/02/28 21:02:48 gomor Exp $
+# $Id: LinkStateRequest.pm,v 1.3 2007/03/13 18:18:21 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::LinkStateRequest;
 use strict;
@@ -79,9 +79,9 @@ Net::Frame::Layer::OSPF::LinkStateRequest - OSPF LinkStateRequest type object
    use Net::Frame::Layer::OSPF::LinkStateRequest;
 
    my $layer = Net::Frame::Layer::OSPF::LinkStateRequest->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
+      lsType            => 0,
+      linkStateId       => '0.0.0.0',
+      advertisingRouter => '0.0.0.0',
    );
    $layer->pack;
 
@@ -104,13 +104,11 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<lsType>
 
-Identification number.
+=item B<linkStateId>
 
-=item B<sequenceNumber>
-
-Sequence number.
+=item B<advertisingRouter>
 
 =back
 
@@ -178,7 +176,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

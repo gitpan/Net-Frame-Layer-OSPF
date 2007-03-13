@@ -1,5 +1,5 @@
 #
-# $Id: Link.pm,v 1.1 2007/03/08 16:32:02 gomor Exp $
+# $Id: Link.pm,v 1.2 2007/03/13 18:21:25 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::Lsa::Router::Link;
 use strict;
@@ -82,16 +82,18 @@ __END__
 
 =head1 NAME
 
-Net::Frame::Layer::OSPF::Lsa::Router::Link - OSPF Lsa::Router::Link type object
+Net::Frame::Layer::OSPF::Lsa::Router::Link - OSPF Lsa  Router  Link type object
 
 =head1 SYNOPSIS
 
    use Net::Frame::Layer::OSPF::Lsa::Router::Link;
 
    my $layer = Net::Frame::Layer::OSPF::Lsa::Router::Link->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
+      linkId   => '0.0.0.0',
+      linkData => '0.0.0.0',
+      type     => 0,
+      nTos     => 0,
+      metric   => 0,
    );
    $layer->pack;
 
@@ -114,13 +116,15 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<linkId>
 
-Identification number.
+=item B<linkData>
 
-=item B<sequenceNumber>
+=item B<type>
 
-Sequence number.
+=item B<nTos>
+
+=item B<metric>
 
 =back
 
@@ -188,7 +192,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

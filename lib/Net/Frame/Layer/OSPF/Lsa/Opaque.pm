@@ -1,5 +1,5 @@
 #
-# $Id: Opaque.pm,v 1.1 2007/01/21 20:59:24 gomor Exp $
+# $Id: Opaque.pm,v 1.2 2007/03/13 18:20:24 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::Lsa::Opaque;
 use strict;
@@ -62,16 +62,14 @@ __END__
 
 =head1 NAME
 
-Net::Frame::Layer::OSPF::Lsa::Opaque - OSPF Lsa type object
+Net::Frame::Layer::OSPF::Lsa::Opaque - OSPF Lsa Opaque type object
 
 =head1 SYNOPSIS
 
    use Net::Frame::Layer::OSPF::Lsa::Opaque;
 
    my $layer = Net::Frame::Layer::OSPF::Lsa::Opaque->new(
-      identifier     => getRandom16bitsInt(),
-      sequenceNumber => getRandom16bitsInt(),
-      payload        => '',
+      data => '',
    );
    $layer->pack;
 
@@ -94,13 +92,7 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
-
-Identification number.
-
-=item B<sequenceNumber>
-
-Sequence number.
+=item B<data>
 
 =back
 
@@ -168,7 +160,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.

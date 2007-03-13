@@ -1,5 +1,5 @@
 #
-# $Id: Lsa.pm,v 1.8 2007/03/05 08:47:03 gomor Exp $
+# $Id: Lsa.pm,v 1.9 2007/03/13 18:19:52 gomor Exp $
 #
 package Net::Frame::Layer::OSPF::Lsa;
 use strict;
@@ -205,12 +205,15 @@ Net::Frame::Layer::OSPF::Lsa - OSPF Lsa type object
 
    # Build a LSA-Router
    my $lsa = Net::Frame::Layer::OSPF::Lsa->new(
-      lsAge             => 100,
-      options           => 0x02,
+      lsAge             => 30,
+      options           => 0,
       lsType            => NF_OSPF_LSTYPE_ROUTER,
-      linkStateId       => $ip,
-      advertisingRouter => $ip,
-      lsSequenceNumber  => 0x80000003,
+      linkStateId       => '0.0.0.0',
+      advertisingRouter => '0.0.0.0',
+      lsSequenceNumber  => 0,
+      lsChecksum        => 0,
+      length            => NF_OSPF_LSA_HDR_LEN,
+      full              => 1,
    );
    my $router = Net::Frame::Layer::OSPF::Lsa::Router->new(
       flags    => 0,
@@ -237,13 +240,25 @@ See also B<Net::Frame::Layer> for other attributes and methods.
 
 =over 4
 
-=item B<identifier>
+=item B<lsAge>
 
-Identification number.
+=item B<options>
 
-=item B<sequenceNumber>
+=item B<lsType>
 
-Sequence number.
+=item B<linkStateId>
+
+=item B<advertisingRouter>
+
+=item B<lsSequenceNumber>
+
+=item B<lsChecksum>
+
+=item B<length>
+
+=item B<lsa>
+
+=item B<full>
 
 =back
 
@@ -311,7 +326,7 @@ Patrice E<lt>GomoRE<gt> Auffret
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2006, Patrice E<lt>GomoRE<gt> Auffret
+Copyright (c) 2006-2007, Patrice E<lt>GomoRE<gt> Auffret
 
 You may distribute this module under the terms of the Artistic license.
 See LICENSE.Artistic file in the source distribution archive.
